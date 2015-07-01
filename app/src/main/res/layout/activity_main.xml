@@ -40,7 +40,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Name:" />
+            android:text="Location:" />
 
         <EditText
             android:id="@+id/location"
@@ -55,5 +55,10 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:text="Submit" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="7" />
 
 </LinearLayout>

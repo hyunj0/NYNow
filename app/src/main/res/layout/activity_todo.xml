@@ -1,41 +1,49 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="nyteam.c4q.nyc.nynow.ToDo">
+    android:paddingTop="@dimen/activity_vertical_margin">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.5"
+        android:text="ToDos"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#ffffff" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal">
+        android:layout_weight="1.5">
 
         <EditText
             android:id="@+id/todo"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="3" />
+            android:layout_weight="4"
+            android:textColor="#ffffff" />
 
         <Button
-            android:id="@+id/enter"
+            android:id="@+id/add"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text="add" />
 
     </LinearLayout>
 
-    <com.dexafree.materialList.view.MaterialListView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/material_listview"
+    <ListView
+        android:id="@+id/todo_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
-        app:column_count="1" />
+        android:layout_weight="7" />
 
 </LinearLayout>

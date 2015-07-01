@@ -6,4 +6,5 @@
     <string name="title_activity_maps">Maps</string>
     <string name="title_activity_to_do">ToDo</string>
     <string name="title_activity_home">Home</string>
+    <string name="title_activity_dummy">Dummy</string>
 </resources>
