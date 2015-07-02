@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,6 +42,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.concurrent.ExecutionException;
 
 public class Home extends ActionBarActivity implements OnMapReadyCallback, LocationListener {
 
@@ -52,28 +54,28 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
     private ListView todo_list;
     private MapFragment map;
 
-    private String name, location;
-
-    private ArrayList<String> todos;
-    private ArrayAdapter<String> todo_adapter;
-
     private LocationManager mLocationManager;
     private Criteria mCriteria;
     private String mProvider;
     private Location mLocation;
+
+    private JSONAsyncTask latLng_jsonAsyncTask, directions_jsonAsyncTask;
+    private LatLngAsyncTask latLngAsyncTask;
+    private DirectionsAsyncTask directionsAsyncTask;
+
+    private String name, location;
+    private ArrayList<String> todos;
+    private ArrayAdapter<String> todo_adapter;
     private double latitude, longitude;
-    private LatLng latLng;
-
-    private OkHttpClient client = new OkHttpClient();
-
     private ArrayList<LatLng> directions = new ArrayList<LatLng>();
     private ArrayList<MarkerOptions> markers = new ArrayList<>();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+
         initializeViews();
+        initializeAsyncTasks();
         setGreeting();
 
         name = getIntent().getExtras().get("Name").toString();
@@ -106,14 +108,21 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
             }
         });
         todo_list.setOnTouchListener(new View.OnTouchListener() {
-
             public boolean onTouch(View v, MotionEvent event) {
                 v.getParent().requestDisallowInterceptTouchEvent(true);
                 return false;
             }
         });
 
-        getLocation();
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mCriteria = new Criteria();
+        mProvider = mLocationManager.getBestProvider(mCriteria, true);
+        mLocation = mLocationManager.getLastKnownLocation(mProvider);
+        if (mLocation != null) {
+            onLocationChanged(mLocation);
+        }
+        mLocationManager.requestLocationUpdates(mProvider, 20000, 0, this);
+
     }
 
     public void initializeViews() {
@@ -127,14 +136,21 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
         map.getMapAsync(this);
     }
 
+    public void initializeAsyncTasks() {
+        latLng_jsonAsyncTask = new JSONAsyncTask();
+        directions_jsonAsyncTask = new JSONAsyncTask();
+        latLngAsyncTask = new LatLngAsyncTask();
+        directionsAsyncTask = new DirectionsAsyncTask();
+    }
+
     public void setGreeting() {
         Calendar now = GregorianCalendar.getInstance();
         int hour = now.get(Calendar.HOUR_OF_DAY);
-        if (hour < 12) {
+        if (hour >= 5 && hour < 12) {
             greeting.setImageDrawable(getResources().getDrawable(R.drawable.morning));
-        } else if (hour < 18) {
+        } else if (hour >= 12 && hour < 18) {
             greeting.setImageDrawable(getResources().getDrawable(R.drawable.afternoon));
-        } else if (hour < 20) {
+        } else if (hour >= 18 && hour < 20) {
             greeting.setImageDrawable(getResources().getDrawable(R.drawable.evening));
         } else {
             greeting.setImageDrawable(getResources().getDrawable(R.drawable.night));
@@ -144,7 +160,7 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         googleMap.setMyLocationEnabled(true);
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude, longitude)));
         googleMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
         googleMap.getUiSettings().setCompassEnabled(true);
@@ -155,8 +171,50 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
             @Override
             public void onMapLongClick(LatLng latLng) {
 
-                LatLng destination = getLatLng(location);
-                getDirections(new LatLng(mLocation.getLatitude(), mLocation.getLongitude()), destination);
+                location.replace(" ", "+");
+                String latLng_url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + location + "&sensor=true";
+                latLng_jsonAsyncTask.execute(latLng_url);
+
+                try {
+                    latLngAsyncTask.execute(latLng_jsonAsyncTask.get());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+
+                LatLng destination = null;
+                try {
+                    destination = latLngAsyncTask.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+
+                String directions_url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + mLocation.getLatitude() + "," + mLocation.getLongitude() + "&destination=" + destination.latitude + "," + destination.longitude;
+
+                directions_jsonAsyncTask.execute(directions_url);
+                String data = null;
+                try {
+                    data = directions_jsonAsyncTask.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                directionsAsyncTask.execute(data);
+                try {
+                    directions = directionsAsyncTask.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
 
                 PolylineOptions rectLine = new PolylineOptions().width(10).color(Color.BLUE);
                 for (int poly = 0; poly < directions.size(); poly++) {
@@ -167,7 +225,6 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
                     }
                     rectLine.add(directions.get(poly));
                 }
-
                 Polyline polyLine = googleMap.addPolyline(rectLine);
 
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -182,22 +239,10 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
         });
     }
 
-    public void getLocation() {
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        mCriteria = new Criteria();
-        mProvider = mLocationManager.getBestProvider(mCriteria, true);
-        mLocation = mLocationManager.getLastKnownLocation(mProvider);
-        if (mLocation != null) {
-            onLocationChanged(mLocation);
-        }
-        mLocationManager.requestLocationUpdates(mProvider, 20000, 0, this);
-    }
-
     @Override
     public void onLocationChanged(Location location) {
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        latLng = new LatLng(latitude, longitude);
     }
 
     @Override
@@ -213,113 +258,5 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
     @Override
     public void onProviderDisabled(String s) {
 
-    }
-
-    public String run(String url) throws IOException {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        Response response = client.newCall(request).execute();
-        return response.body().string();
-    }
-
-    public LatLng getLatLng(String location) {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-        double lng = 0.0;
-        double lat = 0.0;
-        location.replace(" ", "+");
-        String url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + location + "&sensor=true";
-        try {
-            String data = run(url);
-            JSONObject jsonObject;
-            try {
-                jsonObject = new JSONObject(data.toString());
-
-                lng = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
-                        .getJSONObject("geometry").getJSONObject("location")
-                        .getDouble("lng");
-
-                lat = ((JSONArray) jsonObject.get("results")).getJSONObject(0)
-                        .getJSONObject("geometry").getJSONObject("location")
-                        .getDouble("lat");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new LatLng(lat, lng);
-    }
-
-    public void getDirections(LatLng from, LatLng to) {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + from.latitude + "," + from.longitude + "&destination=" + to.latitude + "," + to.longitude;
-        try {
-            String data = run(url);
-            JSONObject jsonObject;
-            ArrayList<String> polylines = new ArrayList<>();
-            try {
-                jsonObject = new JSONObject(data.toString());
-
-                JSONArray routes = jsonObject.getJSONArray("routes");
-                for (int i = 0; i < routes.length(); i++) {
-                    JSONArray legs = ((JSONObject) routes.get(i)).getJSONArray("legs");
-                    for (int j = 0; j < legs.length(); j++) {
-                        JSONArray steps = ((JSONObject) legs.get(j)).getJSONArray("steps");
-                        for (int k = 0; k < steps.length(); k++) {
-                            String polyline = "";
-                            polyline = (String) ((JSONObject) ((JSONObject) steps.get(k)).get("polyline")).get("points");
-                            polylines.add(polyline);
-                            directions = decodePoly(polylines);
-                        }
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private ArrayList<LatLng> decodePoly(ArrayList<String> polylines) {
-
-        ArrayList<LatLng> poly = new ArrayList<LatLng>();
-
-        for (int start = 0; start < polylines.size(); start++) {
-            String encoded = polylines.get(start);
-
-            int index = 0, len = encoded.length();
-            int lat = 0, lng = 0;
-
-            while (index < len) {
-                int b, shift = 0, result = 0;
-                do {
-                    b = encoded.charAt(index++) - 63;
-                    result |= (b & 0x1f) << shift;
-                    shift += 5;
-                } while (b >= 0x20);
-                int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-                lat += dlat;
-
-                shift = 0;
-                result = 0;
-                do {
-                    b = encoded.charAt(index++) - 63;
-                    result |= (b & 0x1f) << shift;
-                    shift += 5;
-                } while (b >= 0x20);
-                int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-                lng += dlng;
-
-                LatLng p = new LatLng((((double) lat / 1E5)),
-                        (((double) lng / 1E5)));
-                poly.add(p);
-            }
-        }
-        return poly;
     }
 }
