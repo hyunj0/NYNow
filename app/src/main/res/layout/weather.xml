@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/holo_blue_light"
+                android:id="@+id/weather">
+
+
+<LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout">
+
+    <com.dexafree.materialList.view.MaterialListView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/material_listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:column_count="1" />
+
+</LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/refresh"
+        android:layout_below="@+id/linearLayout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="42dp"
+        android:src="@drawable/refresh"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:layout_alignBottom="@+id/refresh"
+        android:layout_centerHorizontal="true"
+        android:layout_alignTop="@+id/refresh"
+        android:layout_alignLeft="@+id/refresh"
+        android:layout_toRightOf="@+id/refresh"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/icon_image"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="19dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="43dp"
+        android:src="@drawable/partly_cloudy"
+        android:layout_alignLeft="@+id/temperature"
+        android:layout_alignTop="@+id/temperature"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--"
+        android:id="@+id/precip"
+        android:textColor="#FFFFFFFF"
+        android:textSize="20sp"
+        android:padding="15dp"
+        android:layout_below="@+id/temperature"
+        android:layout_toLeftOf="@+id/temperature"
+        android:layout_toStartOf="@+id/temperature"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--"
+        android:id="@+id/humidity"
+        android:padding="15dp"
+        android:textColor="#FFFFFFFF"
+        android:textSize="20sp"
+        android:layout_alignTop="@+id/precip"
+        android:layout_toRightOf="@+id/progressBar"
+        android:layout_toEndOf="@+id/progressBar"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100"
+        android:id="@+id/temperature"
+        android:layout_marginTop="33dp"
+        android:textSize="50sp"
+        android:textColor="#FFFFFFFF"
+        android:padding="15dp"
+        android:layout_below="@+id/refresh"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

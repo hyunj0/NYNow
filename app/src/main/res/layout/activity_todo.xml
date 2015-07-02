@@ -35,7 +35,7 @@
         android:id="@+id/material_listview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="1"
         app:column_count="1" />
 
 </LinearLayout>
