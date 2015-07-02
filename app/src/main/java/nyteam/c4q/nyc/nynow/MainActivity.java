@@ -28,6 +28,5 @@ public class MainActivity extends ActionBarActivity {
                 startActivity(show);
             }
         });
-//        startActivity(new Intent(this, Dummy.class));
     }
 }

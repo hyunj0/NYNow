@@ -6,7 +6,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v7.app.ActionBarActivity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -19,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -30,15 +30,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -73,6 +65,7 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
         initializeViews();
         initializeAsyncTasks();
@@ -87,17 +80,27 @@ public class Home extends ActionBarActivity implements OnMapReadyCallback, Locat
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                todos.add(todo.getText().toString());
-                todo_adapter.notifyDataSetChanged();
-                todo.setText("");
+                if (todo.getText().toString().isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "No todo added", Toast.LENGTH_LONG).show();
+                } else {
+                    todos.add(todo.getText().toString());
+                    todo_adapter.notifyDataSetChanged();
+                    todo.setText("");
+                }
             }
         });
 
         todos = new ArrayList<String>();
-        todo_adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_checked, todos);
+        todo_adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, todos);
         todo_list.setAdapter(todo_adapter);
-        todo_list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        todo_list.performClick();
+        todo_list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                todos.remove(i);
+                todo_adapter.notifyDataSetChanged();
+                return false;
+            }
+        });
 
         //credits to kyogs (http://stackoverflow.com/a/15062429)
         //nested scrolling: scroll child listview nested inside parent scrollview
