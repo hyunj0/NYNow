@@ -1,11 +1,17 @@
-# NY Now
+![alt tag](https://github.com/hyunj0/NYNow/blob/master/app/src/main/res/drawable/logo.png)
 
-A Google Now app
-Created by Vanice, Sarah, & Anthony M.
+##A Google Now app
 
-Features added:
-- Weather (Vanice)
-- ToDos & Maps (Sarah)
-- Music (Anthony M.)
+###Created by:
 
-Still in the works.
+####Vanice
+
+weather feature
+
+####Sarah
+
+todo & maps feature
+
+####Anthony M.
+
+music feature
