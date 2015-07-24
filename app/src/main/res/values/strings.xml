@@ -7,4 +7,20 @@
     <string name="title_activity_to_do">ToDo</string>
     <string name="title_activity_home">Home</string>
     <string name="title_activity_dummy">Dummy</string>
+    <string name="error_title">Oops! The app did it again!</string>
+    <string name="error_message">We have an error. Please try again!</string>
+    <string name="error_okay_button">Okay</string>
+    <string name="network_unavailable">Network is unavailable!</string>
+    <string name="title_activity_daily">DailyActivity</string>
+    <string name="no_data_display_mesasge">There is no data to display</string>
+    <string name="week">Week</string>
+    <string name="humidity">Humidity</string>
+    <string name="dash">--</string>
+    <string name="precip">Precipitation</string>
+    <string name="no_network_update_message">Staying Sunny while updating</string>
+    <string name="no_time_default_message">It is time to party</string>
+    <string name="hourly">Hourly</string>
+    <string name="title_activity_hourly">HourlyActivity</string>
+    <string name="daily_title_message">This week\'s forecast</string>
+    <string name="start_name">Hi, Please enter your Name</string>
 </resources>
